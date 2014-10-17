@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>Life Game</title>
+		<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" src="js/vector2d.js"></script>
+		<script type="text/javascript" src="js/lifegame.js"></script>
+		<script type="text/javascript" src="js/map.js"></script>
+		<script type="text/javascript" src="js/cell.js"></script>
+
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				/*border: 0;*/
+			}
+			#lifegame {
+				float: left;
+				cursor: default;
+			}
+			#tool_box {
+				float: left;
+				width: 50%;
+				border: 10px solid transparent;
+				box-sizing: border-box;
+			}
+			#tool_box label {
+				display: block;
+				margin-bottom: 10px;
+			}
+			#tool_box button {
+				width: 100px;
+				height: 50px;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="lifegame"></canvas>
+		<div id="tool_box">
+			<div id="world_info">
+				<label>livingCells:<span id="living_cells">NAN</span></label>
+			</div>
+			<label> mouse_x： <span id="x" >NAN</span> </label>
+			<label> mouse_y： <span id="y" >NAN</span> </label>
+			<label> mouse on <span id="yb" >NAN</span> line </label>
+			<label> mouse on <span id="xb" >NAN</span> colunm </label>
+			<button id="create_world">
+				Create World
+			</button>
+			<button id="clear_world">
+				Clear World
+			</button>
+			<button id="startTaggle">
+				Start
+			</button>
+			<button id="one_step">
+				One Step
+			</button>
+		</div>
+
+		<script  type="text/javascript">
+			$(document).ready(function() {
+				lifegame = new LifeGame('lifegame', 30, 40, 80);
+				cellx = celly = 0;
+				mouseDown = false;
+				cellStatusHasChange = false;
+				$("#lifegame").mousemove(function(ev) {
+					ev = ev || window.event;
+					var mousePos = mousePosition(ev);
+					if (cellx != Math.ceil(mousePos.x / game.cellWidth) - 1 || celly != Math.ceil(mousePos.y / game.cellHeight) - 1)
+						cellStatusHasChange = false;
+					$('#x').html(mousePos.x);
+					$('#y').html(mousePos.y);
+					cellx = Math.ceil(mousePos.x / game.cellWidth) - 1;
+					celly = Math.ceil(mousePos.y / game.cellHeight) - 1;
+					$('#xb').html(cellx);
+					$('#yb').html(celly);
+					if (mouseDown && !cellStatusHasChange) {
+						game.changeCellStatus(celly, cellx);
+						cellStatusHasChange = true;
+					}
+				});
+				$("#lifegame").mousedown(function() {
+					mouseDown = true;
+				});
+				$("#lifegame").mouseup(function() {
+					mouseDown = false;
+				});
+				$("#lifegame").click(function() {
+					if (!mouseDown && !cellStatusHasChange) {
+						game.changeCellStatus(celly, cellx);
+					}
+					cellStatusHasChange = false;
+				})
+				$("#create_world").click(function() {
+					game.createMap();
+				})
+				$("#clear_world").click(function() {
+					game.clearMap();
+				})
+				$("#startTaggle").click(function() {
+					if (game.intervalNumber == -1) {
+						$(this).html("Stop");
+						game.startGame();
+					} else {
+						$(this).html("Start");
+						game.stop();
+					}
+				})
+				$("#one_step").click(function() {
+					game.draw();
+					game.render();
+				})
+				function mousePosition(ev) {
+					if (ev.pageX || ev.pageY) {
+						return {
+							x : ev.pageX,
+							y : ev.pageY
+						};
+					}
+					return {
+						x : ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+						y : ev.clientY + document.body.scrollTop - document.body.clientTop
+					};
+				}
+
+
+				$("#startTaggle").click();
+			});
+			window.document.oncontextmenu = function() {
+				return true;
+			}//禁止鼠标右键
+
+			document.onselectstart = new Function('event.returnValue=false;');
+			//禁止鼠标选择
+		</script>
+	</body>
+</html>
